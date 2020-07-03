@@ -31,15 +31,15 @@ Inside that folder, you'll need to put:
 - a folder called "CertificatesTrustedPublisher" that contain the two certificates previously downloaded (cf "Recover Avid and Pace certificates" section)
 
 AvidMediaComposer_2018.12.3
-├── CertificatesTrustedPublisher
-│   ├── AvidMediaComposerCertificate.cer
-│   └── PaceAntiPiracyCertificate.cer
-└── Media_Composer_2018.12.3_Win.zip
+|-- CertificatesTrustedPublisher
+|   |-- AvidMediaComposerCertificate.cer
+|   |-- PaceAntiPiracyCertificate.cer
+|-- Media_Composer_2018.12.3_Win.zip
 AvidMediaComposer_8.6.5
-├── CertificatesTrustedPublisher
-│   ├── AvidMediaComposerCertificate.cer
-│   └── PaceAntiPiracyCertificate.cer
-└── Media_Composer_8.6.5_Win.zip
+|-- CertificatesTrustedPublisher
+|   |-- AvidMediaComposerCertificate.cer
+|   |-- PaceAntiPiracyCertificate.cer
+|-- Media_Composer_8.6.5_Win.zip
 
 ### hosts.yml and roles/avid/vars/mail.yml files
 Don't forget to use your own 'hosts.yml' file and modify the 'hosts' variable into 'avid_playbook.yml' before launching the playbook.
