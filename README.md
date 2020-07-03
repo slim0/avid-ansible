@@ -24,7 +24,7 @@ Here is how you can get them:
 This playbook has been designed to work with an existing samba share in your network acting like a repository. ansible_role will copy required files from that directory.
 You can configure the path to your SMB share and user login in 'avid_playbook.yml' file.
 
-Into that directory, you'll need to have, for each version of Avid Media Composer, a folder called "AvidMediaComposer_$version" (where '$version' is replaced by the full version
+Into that directory, you'll need to have, for each version of Avid Media Composer, a folder called *AvidMediaComposer_$version* (where '$version' is replaced by the full version
 of AvidMediaComposer. for example: AvidMediaComposer_2018_12.3).
 Inside that folder, you'll need to put:
 - the downloaded .zip file from Avid website (cf "Download Avid Media Composer" section)
