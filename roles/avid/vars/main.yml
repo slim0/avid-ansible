@@ -1,0 +1,9 @@
+    # "state" variable should be :
+    # - "install" (to uninstall the existing version and then install the new one.)
+    # - "uninstall" (to uninstall)
+    # - "getversion" (to get the actual version installed)
+    state: install
+
+    # if "state: install", you can specified the version you whant to install
+    # Possible values are, for now:  '8.6.5', '18.12.3'
+    avid_version_to_install: 18.12.3

@@ -1,0 +1,30 @@
+---
+# tasks file for avid
+
+- name: Get version of existing AvidMediaComposer
+  win_file_version:
+    path: 'C:\Program Files\Avid\Avid Media Composer\AvidMediaComposer.exe'
+  register: exe_file_version
+  ignore_errors: true
+  when:
+    - (state == "uninstall") or (state == "install") or (state == "getversion")
+
+- fail:
+    msg: Avid {{ avid_version_to_install }} is already installed on {{ ansible_hostname }}
+  when:
+    - exe_file_version.win_file_version.product_version is defined
+    - state == "install"
+    - exe_file_version.win_file_version.product_version == avid_version_to_install
+
+- name: Uninstall AvidMediaComposer
+  import_tasks: uninstaller.yml
+  when:
+    - state is defined
+    - (state == "uninstall") or (state == "install")
+    - exe_file_version.win_file_version.product_version is defined
+
+- name: Install AvidMediaComposer
+  import_tasks: installer.yml
+  when:
+    - state is defined
+    - state == "install"

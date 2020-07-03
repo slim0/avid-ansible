@@ -1,0 +1,14 @@
+---
+- hosts: all
+  roles:
+     - avid
+
+  vars:
+    temp_local_folder: C:\Windows\Temp\avid-ansible
+    network_path_to_files: \\samba\share
+    login_src: repository_user # Read only user
+
+  vars_prompt:
+    - name: "passwd_src"
+      prompt: "Please enter the password for the user '{{ login_src }}' in order to connect to '{{ network_path_to_files }}'."
+      private: yes

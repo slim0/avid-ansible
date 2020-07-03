@@ -1,0 +1,47 @@
+---
+
+- debug:
+    msg: '{{ exe_file_version }}'
+
+- include_vars: avid_uninstall_vars_{{ exe_file_version.win_file_version.product_version }}.yml
+  ignore_errors: true
+
+- name: Uninstall Avid Application Manager
+  win_package:
+    product_id: "{{ avid_app_manager_product_id }}"
+    state: absent
+  when: avid_app_manager_product_id is defined
+  ignore_errors: true
+
+- name: Uninstall Avid Media Composer
+  win_package:
+    product_id: "{{ avid_product_id }}"
+    state: absent
+  ignore_errors: true
+
+- name: Uninstall Pace Driver
+  win_package:
+    product_id: "{{ pace_product_id }}"
+    state: absent
+  ignore_errors: true
+
+- name: Uninstall Sentinel Driver
+  win_package:
+    product_id: "{{ sentinel_product_id }}"
+    state: absent
+  ignore_errors: true
+  notify: reboot workstation
+
+- name: Uninstall Avid Cloud Client Services
+  win_package:
+    product_id: "{{ avid_cloud_client_product_id }}"
+    state: absent
+  when: avid_cloud_client_product_id is defined
+  ignore_errors: true
+
+- name: Uninstall Avid Link
+  win_package:
+    product_id: "{{ avidlink_product_id }}"
+    state: absent
+  when: avidlink_product_id is defined
+  ignore_errors: true

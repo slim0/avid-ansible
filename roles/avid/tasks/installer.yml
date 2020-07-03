@@ -1,0 +1,87 @@
+---
+
+- include_vars: avid_install.{{ avid_version_to_install }}.yml
+
+- name: Create temp directory if not exist
+  win_file:
+    path: "{{ temp_local_folder }}"
+    state: directory
+
+- name: Install vcredist for Avid (and chocolatey if not present)
+  win_chocolatey:
+    name: vcredist-all
+    state: present
+
+- name: Copy AvidMediaComposer_{{ suffix_foldername }} Installer
+  win_copy:
+    src: '{{ network_path_to_files }}\AvidMediaComposer_{{ suffix_foldername }}'
+    dest: '{{ temp_local_folder }}\'
+    remote_src: True
+  vars:
+    ansible_become: yes
+    ansible_become_method: runas
+    ansible_become_user: "{{ login_src }}"
+    ansible_become_pass: "{{ passwd_src }}"
+    ansible_become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+
+- name: Decompress MediaComposer Installer
+  win_unzip:
+    src: '{{ temp_local_folder }}\AvidMediaComposer_{{ suffix_foldername }}\Media_Composer_{{ suffix_foldername }}_Win.zip'
+    dest: '{{ temp_local_folder }}\AvidMediaComposer_{{ suffix_foldername }}\'
+    recurse: no
+    delete_archive: yes
+
+- name: Install certificate for Pace Driver
+  win_command: 'CertUtil -f -addstore "TrustedPublisher" "{{ temp_local_folder }}\AvidMediaComposer_{{ suffix_foldername }}\CertificatesTrustedPublisher\PaceAntiPiracyCertificate.cer"'
+
+- name: Install certificate for Avid Media Composer
+  win_command: 'CertUtil -f -addstore "TrustedPublisher" "{{ temp_local_folder }}\AvidMediaComposer_{{ suffix_foldername }}\CertificatesTrustedPublisher\AvidMediaComposerCertificate.cer"'
+
+- name: Extract and install Pace Driver MSI
+  win_shell: |
+    $PaceVersion = "PACE License Support {{ pace_version }}"
+    $PreReqBasePath = "{{ temp_local_folder }}\AvidMediaComposer_{{ suffix_foldername }}\MediaComposer\Installers\MediaComposer\ISSetupPrerequisites"
+    New-Item -ItemType Directory -Force -Path "$PreReqBasePath\pace"
+    Start-Process -FilePath "$PreReqBasePath\$PaceVersion\License Support Win64.exe" -ArgumentList "/s","/x","/b$PreReqBasePath\pace","/v/qn" -Wait
+    Start-Process -FilePath "$PreReqBasePath\pace\PACE License Support Win64.msi" -ArgumentList "/quiet","/passive","/norestart" -Wait
+
+- name: Extract and install Sentinel Driver
+  win_shell: |
+    $PreReqBasePath = "{{ temp_local_folder }}\AvidMediaComposer_{{ suffix_foldername }}\MediaComposer\Installers\MediaComposer\ISSetupPrerequisites"
+    New-Item -ItemType Directory -Force -Path "$PreReqBasePath\sentinel"
+    Start-Process -FilePath "$PreReqBasePath\Sentinel USB {{ sentinel_version }} Driver\Sentinel Protection Installer {{ sentinel_version }}.exe" -ArgumentList "/s","/x","/b$PreReqBasePath\sentinel","/v/qn" -Wait
+    Start-Process -FilePath "$PreReqBasePath\sentinel\Sentinel Protection Installer {{ sentinel_version }}.msi" -ArgumentList "/quiet","/passive","/norestart" -Wait
+
+- name: Extract Avid Application Manager MSI and install it
+  win_shell: |
+    $PreReqBasePath = "{{ temp_local_folder }}\AvidMediaComposer_{{ suffix_foldername }}\MediaComposer\Installers\MediaComposer\ISSetupPrerequisites"
+    New-Item -ItemType Directory -Force -Path "$PreReqBasePath\avidapplicationmanager"
+    Start-Process -FilePath "$PreReqBasePath\Avid Application Manager\AvidApplicationManagerSetup.exe" -ArgumentList "/s","/x","/b$PreReqBasePath\avidapplicationmanager","/v/qn" -Wait
+    Start-Process -FilePath "$PreReqBasePath\avidapplicationmanager\Avid Application Manager.msi" -ArgumentList "/quiet","/passive","/norestart" -Wait
+  when: avid_version_to_install in ["8.6.5"]
+
+- name: Extract Avid Cloud Client Services MSI and install it
+  win_shell: |
+    $PreReqBasePath = "{{ temp_local_folder }}\AvidMediaComposer_{{ suffix_foldername }}\MediaComposer\Installers\MediaComposer\ISSetupPrerequisites"
+    New-Item -ItemType Directory -Force -Path "$PreReqBasePath\avidcloudclientservices"
+    Start-Process -FilePath "$PreReqBasePath\Avid Cloud Client Services\Avid_Cloud_Client_Services.exe" -ArgumentList "/s","/x","/b$PreReqBasePath\avidcloudclientservices","/v/qn" -Wait
+    Start-Process -FilePath "$PreReqBasePath\avidcloudclientservices\Avid Cloud Client Services.msi" -ArgumentList "/quiet","/passive","/norestart" -Wait
+  when: avid_version_to_install in ["18.12.3"]
+
+- name: Extract Avid Link MSI and install it
+  win_shell: |
+    $PreReqBasePath = "{{ temp_local_folder }}\AvidMediaComposer_{{ suffix_foldername }}\MediaComposer\Installers\MediaComposer\ISSetupPrerequisites"
+    New-Item -ItemType Directory -Force -Path "$PreReqBasePath\avidlink_install"
+    Start-Process -FilePath "$PreReqBasePath\AvidLink\AvidLinkSetup.exe" -ArgumentList "/s","/x","/b$PreReqBasePath\avidlink_install","/v/qn" -Wait
+    Start-Process -FilePath "$PreReqBasePath\avidlink_install\Avid Link.msi" -ArgumentList "/quiet","/passive","/norestart" -Wait
+  when: avid_version_to_install in ["18.12.3"]
+
+- name: Install Avid Media Composer {{ avid_version_to_install }}
+  win_shell: |
+    Start-Process -FilePath "{{ temp_local_folder }}\AvidMediaComposer_{{ suffix_foldername }}\MediaComposer\Installers\MediaComposer\Avid Media Composer.msi" -ArgumentList "/quiet","/passive","/norestart", "/L*V C:\msi.log" -Wait
+  notify: reboot workstation
+
+- name: Remove directory structure
+  win_file:
+    path: "{{ temp_local_folder }}"
+    state: absent

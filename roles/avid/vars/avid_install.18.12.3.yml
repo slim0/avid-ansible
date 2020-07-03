@@ -1,0 +1,6 @@
+---
+
+pace_version: 4.0.3
+sentinel_version: 7.6.9
+
+suffix_foldername: "20{{ avid_version_to_install }}"
